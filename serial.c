@@ -12,7 +12,7 @@
 
 
 
-/* Serial runs at 110 baud as as used by the monitor.
+/* Serial runs at 110 baud as used by the monitor.
  * Output/Input bit changes every 1/110 = 0.0091 second.
  * 0.0091 seconds are 9100000 nanoseconds.
  * CPU uses 330 nanoseconds on one cycle.

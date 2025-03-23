@@ -167,10 +167,11 @@ static void display_help(const char *progname)
 {
   fprintf(stdout, "Usage: %s <options> <monitor-hex-file>\n", progname);
   fprintf(stdout, "Options:\n"
-    "  -h        Display this help.\n"
-    "  -d        Break into debugger on start.\n"
-    "  -s        Run in serial mode instead of display/keyboard mode.\n"
-    "  -e FILE   Load additional expansion ROM from HEX FILE.\n"
+    "  -h          Display this help.\n"
+    "  -d          Break into debugger on start.\n"
+    "  -s          Run in serial mode instead of display/keyboard mode.\n"
+    "  -e FILE     Load additional expansion ROM from HEX FILE.\n"
+    "  -i STRING   Inject keyboard data STRING in display/keyboard mode.\n"
     "\n");
   fprintf(stdout, "HEX files should be in Intel format.\n"
     "If no monitor HEX file is specified then '" DEFAULT_MONITOR_HEX_FILE
@@ -185,9 +186,10 @@ int main(int argc, char *argv[])
   int c;
   char *monitor_hex_filename = NULL;
   char *expansion_hex_filename = NULL;
+  char *keyboard_inject = NULL;
   bool serial_mode = false;
 
-  while ((c = getopt(argc, argv, "hdse:")) != -1) {
+  while ((c = getopt(argc, argv, "hdse:i:")) != -1) {
     switch (c) {
     case 'h':
       display_help(argv[0]);
@@ -203,6 +205,10 @@ int main(int argc, char *argv[])
 
     case 'e':
       expansion_hex_filename = optarg;
+      break;
+
+    case 'i':
+      keyboard_inject = optarg;
       break;
 
     case '?':
@@ -253,6 +259,14 @@ int main(int argc, char *argv[])
   } else {
     i8279_init(&i8279, &mem);
     i8279_update(&i8279);
+
+    if (keyboard_inject != NULL) {
+      c = strlen(keyboard_inject);
+      while (c > 0) {
+        c--;
+        i8279_keyboard_inject(&i8279, keyboard_inject[c]);
+      }
+    }
   }
 
   i8085_reset(&cpu);
@@ -271,8 +285,8 @@ int main(int argc, char *argv[])
       serial_execute(&serial, &cpu);
 
     } else {
-      if (cpu.pc == 0x02E7 || cpu.halt) {
-        /* Monitor: Waiting for keyboard input. */
+      if (cpu.pc == 0x02E7 || cpu.halt || cpu.pc == 0x05F7) {
+        /* Monitor: Waiting for keyboard input, halted or delay finished. */
         switch (i8279_keyboard_poll(&i8279)) {
         case I8279_KEY_FIFO:
           i8085_rst_55(&cpu, &mem);
@@ -284,7 +298,7 @@ int main(int argc, char *argv[])
           i8085_rst_75(&cpu, &mem);
           break;
         case I8279_KEY_QUIT:
-          return EXIT_FAILURE;
+          return EXIT_SUCCESS;
           break;
         case I8279_KEY_NONE:
         default:

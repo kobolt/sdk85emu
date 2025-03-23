@@ -2323,6 +2323,7 @@ void i8085_execute(i8085_t *cpu, mem_t *mem)
 {
   uint8_t opcode;
   if (cpu->halt) {
+    cpu->cycles++;
     return;
   }
   opcode = mem_read(mem, cpu->pc++);

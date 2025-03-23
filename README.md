@@ -11,7 +11,7 @@ Features:
 * Debugger with breakpoints and tracing support.
 * Expects the "monitor.hex" ROM in Intel HEX format.
 * Can also load an additional expansion ROM.
-* Remaining memory space is maxed out with RAM.
+* Basic RAM and expansion RAM installed.
 
 Display/keyboard mode:
 ```

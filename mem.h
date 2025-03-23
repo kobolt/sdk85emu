@@ -8,7 +8,7 @@ typedef uint8_t (*mem_read_hook_t)(void *, uint16_t);
 typedef void (*mem_write_hook_t)(void *, uint16_t, uint8_t);
 
 #define MEM_ROM_MAX 0x1000
-#define MEM_RAM_MAX 0xF000
+#define MEM_RAM_MAX 0x100
 
 #define MEM_I8279_KEYBOARD_FIFO 0x1800
 #define MEM_I8279_DISPLAY_DATA  0x1800
@@ -18,6 +18,7 @@ typedef void (*mem_write_hook_t)(void *, uint16_t, uint8_t);
 typedef struct mem_s {
   uint8_t rom[MEM_ROM_MAX];
   uint8_t ram[MEM_RAM_MAX];
+  uint8_t exp[MEM_RAM_MAX];
   mem_read_hook_t  i8279_read;
   mem_write_hook_t i8279_write;
   void *i8279;

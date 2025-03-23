@@ -222,6 +222,7 @@ static void i8279_command_word_write(i8279_t *i8279, uint8_t value)
         i8279->display_ram[i] = 0xFF;
       }
     }
+    i8279_update(i8279);
     break;
 
   case 0b111: /* End Interrupt/Error Mode Set */
@@ -296,7 +297,19 @@ i8279_key_t i8279_keyboard_poll(i8279_t *i8279)
   MEVENT me;
 #endif /* NCURSES_MOUSE_VERSION */
 
-  ch = getch();
+  if (i8279->inject_size > 0) {
+    if (i8279->inject_delay > 0) {
+      i8279->inject_delay--;
+      ch = ERR;
+    } else {
+      i8279->inject_delay = I8279_INJECT_DELAY;
+      i8279->inject_size--;
+      ch = i8279->inject[i8279->inject_size];
+    }
+  } else {
+    ch = getch();
+  }
+
   if (ch == ERR) {
     i8279->keyboard_fifo = 0xFF;
     return I8279_KEY_NONE;
@@ -495,6 +508,18 @@ i8279_key_t i8279_keyboard_poll(i8279_t *i8279)
   }
 
   return I8279_KEY_NONE;
+}
+
+
+
+void i8279_keyboard_inject(i8279_t *i8279, int ch)
+{
+  if (i8279->inject_size >= I8279_INJECT_MAX) {
+    return;
+  }
+  i8279->inject[i8279->inject_size] = ch;
+  i8279->inject_size++;
+  i8279->inject_delay = I8279_INJECT_DELAY;
 }
 
 

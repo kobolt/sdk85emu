@@ -18,6 +18,9 @@ void mem_init(mem_t *mem)
   for (i = 0; i < MEM_RAM_MAX; i++) {
     mem->ram[i] = 0x00; /* NOP */
   }
+  for (i = 0; i < MEM_RAM_MAX; i++) {
+    mem->exp[i] = 0x00; /* NOP */
+  }
 
   mem->i8279_read = NULL;
   mem->i8279_write = NULL;
@@ -35,8 +38,10 @@ uint8_t mem_read(mem_t *mem, uint16_t address)
       if (mem->i8279_read != NULL && mem->i8279 != NULL) {
         return (mem->i8279_read)(mem->i8279, address);
       }
-    } else {
-      return mem->ram[address - 0x1000];
+    } else if (address >= 0x2000 && address <= 0x27FF) {
+      return mem->ram[address & 0xFF];
+    } else if (address >= 0x2800 && address <= 0x2FFF) {
+      return mem->exp[address & 0xFF];
     }
   }
   return 0xFF;
@@ -51,8 +56,10 @@ void mem_write(mem_t *mem, uint16_t address, uint8_t value)
       if (mem->i8279_write != NULL && mem->i8279 != NULL) {
         (mem->i8279_write)(mem->i8279, address, value);
       }
-    } else {
-      mem->ram[address - 0x1000] = value;
+    } else if (address >= 0x2000 && address <= 0x27FF) {
+      mem->ram[address & 0xFF] = value;
+    } else if (address >= 0x2800 && address <= 0x2FFF) {
+      mem->exp[address & 0xFF] = value;
     }
   }
 }

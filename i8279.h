@@ -6,6 +6,8 @@
 #include "mem.h"
 
 #define I8279_DISPLAY_RAM_MAX 16
+#define I8279_INJECT_MAX 2048
+#define I8279_INJECT_DELAY 10
 
 typedef struct i8279_s {
   uint8_t keyboard_fifo;
@@ -14,6 +16,9 @@ typedef struct i8279_s {
   unsigned int display_ram_index;
   unsigned int display_ram_limit;
   bool auto_increment;
+  int inject[I8279_INJECT_MAX];
+  unsigned int inject_size;
+  unsigned int inject_delay;
 } i8279_t;
 
 typedef enum {
@@ -29,5 +34,6 @@ void i8279_resume(void);
 void i8279_init(i8279_t *i8279, mem_t *mem);
 void i8279_update(i8279_t *i8279);
 i8279_key_t i8279_keyboard_poll(i8279_t *i8279);
+void i8279_keyboard_inject(i8279_t *i8279, int ch);
 
 #endif /* _I8279_H */
